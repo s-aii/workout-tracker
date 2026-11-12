@@ -1,2 +1,2 @@
-# drafter-deployment-template-v1
-Your first Drafter website!
+# Workout Tracker Drafter Program
+University of Delaware CISC106 Final Project
