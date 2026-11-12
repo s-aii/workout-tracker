@@ -154,17 +154,12 @@ class State:
 # =========================================================
 # HELPER FUNCTIONS
 # =========================================================
-def get_theme_css(state):
+def get_theme_css(state: State) -> str:
     """Return the CSS that matches the user's selected theme."""
     if state.dark_theme:
         return DARK_THEME_CSS
     else:
         return LIGHT_THEME_CSS
-
-
-def make_page(state, content):
-    """Create a page using the currently selected theme."""
-    return Page(state, content, css=get_theme_css(state))
 
 
 def make_page(state: State, content: list) -> Page:
@@ -182,7 +177,7 @@ def make_page(state: State, content: list) -> Page:
         return Page(state, content, css=LIGHT_THEME_CSS)
 
 
-def find_exercise(state: State, name: str):
+def find_exercise(state: State, name: str) -> Exercise | None:
     """
     Searches for an exercise by name.
 
@@ -231,7 +226,7 @@ def get_max_weight(state: State, exercise_name: str) -> float:
     return maximum
 
 
-def get_exercise_history(state: State, exercise_name: str):
+def get_exercise_history(state: State, exercise_name: str) -> list[WorkoutEntry]:
     """
     Returns all workout entries for a selected exercise.
     """
@@ -661,7 +656,7 @@ def log_workout(state: State) -> Page:
 # =========================================================
 
 @route
-def update_rep_fields(state, sets: str) -> Fragment:
+def update_rep_fields(state: State, sets: str) -> Fragment:
     """Update the number of rep input boxes when the set count changes."""
 
     number_of_sets = int(sets)
@@ -1051,6 +1046,18 @@ def clear_history(state: State) -> Page:
 # START WEBSITE
 # =========================================================
 
+set_site_information(
+    author="Your Name",
+    description=(
+        "A workout tracker that lets users manage exercises, log workouts, "
+        "and view their workout progression over time."
+    ),
+    sources="Drafter documentation and Matplotlib documentation.",
+    planning="",
+    links=[]
+)
+
+
 start_server(
 
     State(
@@ -1065,4 +1072,5 @@ start_server(
 
     site_title="Workout Tracker"
 )
+
 
