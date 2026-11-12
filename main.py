@@ -1,9 +1,71 @@
-
 from drafter import *
 from dataclasses import dataclass
 from datetime import date
-from typing import Any
-import matplotlib.pyplot as plt
+from typing import Any  # ADVANCED: type hint only (see documentation block, item 2)
+import matplotlib.pyplot as plt  # ADVANCED: draws the progression graph (see item 1)
+
+
+# =========================================================
+# DOCUMENTATION OF ADVANCED TECHNIQUES
+# =========================================================
+# The techniques below go beyond what was covered in the course.
+# Each one is summarized here and explained again in a comment
+# right where it is used in the code.
+#
+#
+# 1. typing.Any and list[Any]
+#    "Any" is a type hint meaning "any type of value is allowed."
+#    It is used for lists that mix strings and Drafter components
+#    (Header, TextBox, Button, ...) because no single type describes
+#    all of them. Type hints do not change how the code runs.
+#
+# 2. Union type hint: Exercise | None
+#    The "|" means "or." find_exercise returns an Exercise if one is
+#    found, or None if it is not, so its return type is
+#    "Exercise or None." Callers check "is None" before using it.
+#
+# 3. try / except (in save_workout)
+#    Code inside "try" runs normally. If it causes one of the listed
+#    errors, Python jumps to the "except" block instead of crashing
+#    the website. It is used to safely convert the "sets" dropdown
+#    text (like "3") into an integer.
+#
+# 4. List comprehensions and star-unpacking (*)
+#    - A list comprehension builds a list in a single expression:
+#      [expression for item in sequence]. progress_graph uses one to
+#      build one line of text per logged workout.
+#    - A * in front of a list, inside another list or a function call,
+#      "unpacks" it so its items are placed individually instead of
+#      nested as one list. It is used in progress_graph (each workout
+#      line becomes its own item of the page content) and in
+#      log_workout (Div(*make_rep_fields(3)) passes each rep field to
+#      Div as a separate argument).
+#
+# 5. Fragments, on_change, and Div(id=...) (live updates)
+#    Normally clicking a Button loads a whole new Page. A Fragment
+#    replaces only one part of the current page. The "sets" SelectBox
+#    has on_change="update_rep_fields", so choosing a new number of
+#    sets automatically calls that route. The route returns a Fragment
+#    whose target="#rep_fields" matches the id given to the Div in
+#    log_workout, so only the rep boxes are swapped out.
+#
+# 6. Custom CSS (DARK_THEME_CSS, LIGHT_THEME_CSS, and css=)
+#    CSS is the language that controls colors and styling on web
+#    pages. The two theme strings hold CSS rules, and the css=
+#    argument of Page/Fragment applies them. "!important" makes a
+#    rule override Drafter's default styling.
+#
+# 7. Dates (from datetime import date)
+#    date.today() returns today's date. It is converted to text with
+#    str() so each WorkoutEntry remembers when it was logged.
+#
+# 8. Extra TextBox options and default parameter values
+#    TextBox(..., "number", min=1, step=1, required=True) is the same
+#    TextBox with extra keyword arguments that make the browser
+#    only accept numbers, enforce a minimum, and require a value.
+#    In save_workout, "reps_1: int = 0" gives a parameter a default
+#    value, used if the browser does not send that field (for example
+#    when fewer than 5 sets are selected).
 
 
 # =========================================================
@@ -22,6 +84,9 @@ SET_OPTIONS = ["1", "2", "3", "4", "5"]
 # WEBSITE THEMES
 # =========================================================
 
+# ADVANCED TECHNIQUE (custom CSS): these multi-line strings contain CSS
+# rules that restyle the page (background, text, inputs, buttons).
+# The matching theme is applied through the css= argument in make_page.
 DARK_THEME_CSS = """
 html, body {
     background-color: #121826 !important;
@@ -172,12 +237,17 @@ def make_page(state: State, content: list[Any]) -> Page:
     """
 
     if state.dark_theme:
+        # ADVANCED TECHNIQUE (css= argument): applies the theme's CSS
+        # string to the whole page.
         return Page(state, content, css=DARK_THEME_CSS)
 
     else:
         return Page(state, content, css=LIGHT_THEME_CSS)
 
 
+# ADVANCED TECHNIQUE (union type hint): "Exercise | None" means this
+# function returns either an Exercise or None. Callers must check
+# "is None" before using the result.
 def find_exercise(state: State, name: str) -> Exercise | None:
     """
     Searches for an exercise by name.
@@ -261,6 +331,8 @@ def get_reps_description(reps: list[int]) -> str:
     return description
 
 
+# ADVANCED TECHNIQUE (list[Any]): the list mixes strings, Headers, and
+# TextBoxes, so "Any" is used as a type hint for "any kind of value."
 def make_rep_fields(number_of_sets: int) -> list[Any]:
     """
     Dynamically creates rep textboxes.
@@ -633,9 +705,16 @@ def log_workout(state: State) -> Page:
             "sets",
             SET_OPTIONS,
             "3",
+            # ADVANCED TECHNIQUE (live update): on_change calls the
+            # update_rep_fields route whenever the selection changes,
+            # without reloading the whole page.
             on_change="update_rep_fields"
         ),
 
+        # ADVANCED TECHNIQUE (Div id + star-unpacking): the * unpacks the
+        # list returned by make_rep_fields so each item becomes its own
+        # argument to Div. The id lets the Fragment in update_rep_fields
+        # find this Div (target="#rep_fields") and replace its contents.
         Div(
             *make_rep_fields(3),
             id="rep_fields"
@@ -662,6 +741,10 @@ def update_rep_fields(state: State, sets: str) -> Fragment:
 
     number_of_sets = int(sets)
 
+    # ADVANCED TECHNIQUE (Fragment): instead of a whole new Page, this
+    # returns only the new rep boxes. target="#rep_fields" tells Drafter
+    # to replace the Div with id="rep_fields" on the log_workout page.
+    # css= keeps the current theme applied to the new boxes.
     return Fragment(
         state,
         make_rep_fields(number_of_sets),
@@ -711,6 +794,9 @@ def save_workout(state: State,
         return log_workout(state)
 
     # Convert the dropdown selection into an integer.
+    # ADVANCED TECHNIQUE (try / except): the code under "try" runs
+    # normally. If int() fails with a ValueError or TypeError, Python
+    # skips to the "except" block below instead of crashing the site.
     try:
 
         number_of_sets = int(sets)
@@ -767,6 +853,8 @@ def save_workout(state: State,
         exercise_name,
         weight,
         selected_reps,
+        # ADVANCED TECHNIQUE (datetime): date.today() gets today's date;
+        # str() turns it into text such as "2026-11-12".
         str(date.today())
     )
 
@@ -887,6 +975,9 @@ def progress_graph(state: State,
     )
 
     # Generate graph.
+    # ADVANCED TECHNIQUE (matplotlib): plt.figure() starts a blank graph,
+    # plt.plot() draws the weights as a line with circle markers, and the
+    # remaining plt.* calls add a title, axis labels, grid, and legend.
     plt.figure(figsize=(8, 5))
 
     plt.plot(
@@ -920,10 +1011,15 @@ def progress_graph(state: State,
 
         "Total Sessions: " + str(len(matching_entries)),
 
+        # Drafter component that displays the graph drawn above with plt.
         MatPlotLibPlot(),
 
         Header("Workout History", level=2),
 
+        # ADVANCED TECHNIQUES (list comprehension + star-unpacking):
+        # [text for i in range(...)] builds one line of text per workout.
+        # The * unpacks that list so each line becomes its own item in
+        # this Page's content instead of one nested list.
         *[
             "Workout " + str(i + 1)
             + ": " + workout_dates[i]
@@ -1073,5 +1169,3 @@ start_server(
 
     site_title="Workout Tracker"
 )
-
-
