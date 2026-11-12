@@ -2,6 +2,7 @@
 from drafter import *
 from dataclasses import dataclass
 from datetime import date
+from typing import Any
 import matplotlib.pyplot as plt
 
 
@@ -162,7 +163,7 @@ def get_theme_css(state: State) -> str:
         return LIGHT_THEME_CSS
 
 
-def make_page(state: State, content: list) -> Page:
+def make_page(state: State, content: list[Any]) -> Page:
     """
     Creates a page using the user's selected theme.
 
@@ -198,7 +199,7 @@ def get_exercise_names(state: State) -> list[str]:
     Creates a list of exercise names for dropdown menus.
     """
 
-    names = []
+    names: list[str] = []
 
     for exercise in state.exercises:
         names.append(exercise.name)
@@ -231,7 +232,7 @@ def get_exercise_history(state: State, exercise_name: str) -> list[WorkoutEntry]
     Returns all workout entries for a selected exercise.
     """
 
-    matching_entries = []
+    matching_entries: list[WorkoutEntry] = []
 
     for entry in state.history:
 
@@ -260,7 +261,7 @@ def get_reps_description(reps: list[int]) -> str:
     return description
 
 
-def make_rep_fields(number_of_sets: int) -> list:
+def make_rep_fields(number_of_sets: int) -> list[Any]:
     """
     Dynamically creates rep textboxes.
 
@@ -270,7 +271,7 @@ def make_rep_fields(number_of_sets: int) -> list:
     The minimum allowed value is 1 rep.
     """
 
-    content = [
+    content: list[Any] = [
         Header("Reps Completed in Each Set", level=2)
     ]
 
@@ -344,7 +345,7 @@ def view_exercises(state: State) -> Page:
     Displays the user's saved exercises.
     """
 
-    content = [
+    content: list[Any] = [
 
         Header("EDIT EXERCISES"),
 
@@ -569,7 +570,7 @@ def confirm_remove(state: State,
 
         state.exercises.remove(exercise)
 
-        remaining_history = []
+        remaining_history: list[WorkoutEntry] = []
 
         for entry in state.history:
 
@@ -635,9 +636,9 @@ def log_workout(state: State) -> Page:
             on_change="update_rep_fields"
         ),
 
-        Output(
-            "rep_fields",
-            make_rep_fields(3)
+        Div(
+            *make_rep_fields(3),
+            id="rep_fields"
         ),
 
         HorizontalRule(),
@@ -728,7 +729,7 @@ def save_workout(state: State,
         return log_workout(state)
 
     # Store the rep inputs.
-    all_reps = [
+    all_reps: list[int] = [
         reps_1,
         reps_2,
         reps_3,
@@ -737,7 +738,7 @@ def save_workout(state: State,
     ]
 
     # Only save reps corresponding to selected sets.
-    selected_reps = []
+    selected_reps: list[int] = []
 
     for index_number in range(number_of_sets):
 
@@ -869,9 +870,9 @@ def progress_graph(state: State,
         ])
 
     # Collect weights and dates.
-    weights = []
+    weights: list[float] = []
 
-    workout_dates = []
+    workout_dates: list[str] = []
 
     for entry in matching_entries:
 
